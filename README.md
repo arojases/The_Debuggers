@@ -26,8 +26,9 @@ The platform allows users to share their knowledge, discover learning opportunit
 ## Technologies
 
 - **Language:** C#
-- **Framework:** ASP.NET Core MVC
-- **Database:** SQL Server or SQLite
+- **Framework:** Blazor Web App (.Net)
+- **Authentication:** ASP.NET Core Identity
+- **Database:** SQLite
 - **ORM:** Entity Framework Core
 - **Frontend:** HTML, CSS, Bootstrap
 - **Version Control:** Git & GitHub
