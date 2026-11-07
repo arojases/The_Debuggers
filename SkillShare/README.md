@@ -13,8 +13,23 @@ with people who are willing to teach them.
 - C#
 - ASP.NET Core MVC
 - Entity Framework Core
-- SQL Server or SQLite
-- Bootstrap
+
+download the EF
+
+> dotnet tool install --global dotnet-ef
+
+Set the connection string to supabase project.
+
+> dotnet user-secrets set "ConnectionStrings:DefaultConnection" 'Host=aws-1-us-west-2.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.jjgyulmtkeqjlghjjlko;Password=YOURDATABASEPASSWORDHERE;SSL Mode=Require'
+
+This lists your connectionstrings to help you check your connection.
+
+> dotnet user-secrets list
+
+This is how you update tables in supabase
+
+> dotnet ef migrations add //describe the changes like git commit -m "
+> dotnet ef database update
 
 ## Team
 
