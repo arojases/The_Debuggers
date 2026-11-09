@@ -1,0 +1,46 @@
+@page "/skills/create"
+@rendermode InteractiveServer
+@inject SkillService SkillService
+@inject NavigationManager Nav
+
+<PageTitle>New Skill</PageTitle>
+<h1>New Skill</h1>
+
+<EditForm Model="skill" OnValidSubmit="Save">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <InputText class="form-control" @bind-Value="skill.Title" />
+        <ValidationMessage For="() => skill.Title" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <InputTextArea class="form-control" rows="5" @bind-Value="skill.Description" />
+        <ValidationMessage For="() => skill.Description" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <InputSelect class="form-select" @bind-Value="skill.CategoryId">
+            <option value="">-- choose --</option>
+            @foreach (var c in categories) { <option value="@c.Id">@c.Name</option> }
+        </InputSelect>
+        <ValidationMessage For="() => skill.CategoryId" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-light" href="skills">Cancel</a>
+</EditForm>
+
+@code {
+    private Skill skill = new();
+    private List<Category> categories = new();
+
+    protected override async Task OnInitializedAsync() => categories = await SkillService.GetCategoriesAsync();
+
+    private async Task Save()
+    {
+        await SkillService.CreateAsync(skill);
+        Nav.NavigateTo($"skills/{skill.Id}");
+    }
+}

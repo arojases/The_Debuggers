@@ -1,0 +1,55 @@
+@page "/skills/edit/{Id:guid}"
+@rendermode InteractiveServer
+@inject SkillService SkillService
+@inject NavigationManager Nav
+
+<PageTitle>Edit Skill</PageTitle>
+<h1>Edit Your Skill!</h1>
+
+@if (skill is null) { <p>Skill not found.</p> }
+else
+{
+    <EditForm Model="skill" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <InputText class="form-control" @bind-Value="skill.Title" />
+            <ValidationMessage For="() => skill.Title" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <InputTextArea class="form-control" rows="5" @bind-Value="skill.Description" />
+            <ValidationMessage For="() => skill.Description" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <InputSelect class="form-select" @bind-Value="skill.CategoryId">
+                <option value="">-- choose --</option>
+                @foreach (var c in categories) { <option value="@c.Id">@c.Name</option> }
+            </InputSelect>
+            <ValidationMessage For="() => skill.CategoryId" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-light" href="skills/@Id">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private Skill? skill;
+    private List<Category> categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await SkillService.GetCategoriesAsync();
+        skill = await SkillService.GetByIdAsync(Id);
+    }
+
+    private async Task Save()
+    {
+        await SkillService.UpdateAsync(skill!);
+        Nav.NavigateTo($"skills/{Id}");
+    }
+}

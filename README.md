@@ -54,3 +54,21 @@ We collaborate on software design, implementation, testing, and documentation.
 **Current Phase:** Planning and Requirements Definition
 
 This project is being developed as part of CSE 325 – .NET Software Development at BYU-Idaho, Fall 2026.
+
+## How to connect and update database
+download the EF
+
+> dotnet tool install --global dotnet-ef
+
+Set the connection string to supabase project.
+
+> dotnet user-secrets set "ConnectionStrings:DefaultConnection" 'Host=aws-1-us-west-2.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.jjgyulmtkeqjlghjjlko;Password=YOURDATABASEPASSWORDHERE;SSL Mode=Require'
+
+This lists your connectionstrings to help you check your connection.
+
+> dotnet user-secrets list
+
+This is how you update tables in supabase
+
+> dotnet ef migrations add //describe the changes like git commit -m "
+> dotnet ef database update

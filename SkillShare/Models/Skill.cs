@@ -6,13 +6,18 @@ namespace SkillShare.Models
     {
         public Guid Id { get; set; }
 
-        [Required(ErrorMessage = "Name is required")]
+        [Required(ErrorMessage = "Title is required")]
         [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
 
         [StringLength(1000)]
         public string Description { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Please choose a category")]        
+        public int? CategoryId { get; set; }
+        public Category? Category { get; set; }
+
+        public string? OwnerId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

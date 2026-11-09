@@ -1,6 +1,17 @@
 using SkillShare.Components;
+using Microsoft.EntityFrameworkCore;
+using SkillShare.Data;
+using SkillShare.Services;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found");
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseNpgsql(connectionString));
+builder.Services.AddScoped<SkillService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

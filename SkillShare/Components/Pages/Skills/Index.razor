@@ -1,0 +1,26 @@
+@page "/skills"
+@inject SkillService SkillService
+
+<PageTitle>Skills</PageTitle>
+<h1>Skills</h1>
+<a class="btn btn-primary mb-3" href="skills/create">+ New Skill</a>
+
+@if (skills is null) { <p><em>Loading...</em></p> }
+else if (skills.Count == 0) { <p>No skills yet.</p> }
+else
+{
+    <table class="table">
+        <thead><tr><th>Title</th><th>Category</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var s in skills)
+        {
+            <tr><td>@s.Title</td><td>@s.Category?.Name</td><td><a href="skills/@s.Id">View</a></td></tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Skill>? skills;
+    protected override async Task OnInitializedAsync() => skills = await SkillService.GetAllAsync();
+}
