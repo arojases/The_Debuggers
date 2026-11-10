@@ -6,10 +6,10 @@ using SkillShare.Components.Account;
 using SkillShare.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("SkillShareDB")
-    ?? throw new InvalidOperationException("Connection string 'SkillShareDB' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
