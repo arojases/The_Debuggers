@@ -1,0 +1,21 @@
+@page "/auth-test"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Authentication Test</PageTitle>
+
+<h1>Protected Page</h1>
+
+<p>
+    You can see this page because
+    you are logged in.
+</p>
+
+<AuthorizeView>
+    <Authorized>
+        <p>
+            Logged in as:
+            @context.User.Identity?.Name
+        </p>
+    </Authorized>
+</AuthorizeView>
