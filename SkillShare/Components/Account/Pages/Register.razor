@@ -19,8 +19,8 @@
 
 <h1>Register</h1>
 
-<div class="row">
-    <div class="col-lg-6">
+<div class="row" justify-content-center>
+    <div class="col-lg-6 col-md-8">
         <StatusMessage Message="@Message" />
         <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
             <DataAnnotationsValidator />
@@ -38,18 +38,21 @@
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Password" />
                 <label for="Input.Password">Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Confirm Password" />
                 <label for="Input.ConfirmPassword">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
+
+    @* Use this section to enable external logins.  When you add an external login provider, like Microsoft, Facebook, or Google, you can remove the comment and update this section.  See https://aka.ms/aspaccountexternal for more information.
+
     <div class="col-lg-4 col-lg-offset-2">
         <section>
             <h3>Use another service to register.</h3>
@@ -57,6 +60,8 @@
             <ExternalLoginPicker />
         </section>
     </div>
+    *@
+
 </div>
 
 @code {
