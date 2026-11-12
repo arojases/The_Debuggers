@@ -9,5 +9,8 @@ namespace SkillShare.Data
         [Required]
         [MaxLength(100)]
         public string FullName { get; set; } = string.Empty;
+
+        [MaxLength(500)]
+        public string? Biography { get; set; }
     }
 }
