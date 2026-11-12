@@ -13,14 +13,14 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
+<h1>Welcome Back!</h1>
+<div class="row" justify-content-center>
+    <div class="col-lg-6 col-md-8">
         <section>
             <StatusMessage Message="@errorMessage" />
             <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
+                <h2>Log in to your SkillShare account</h2>
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
@@ -43,10 +43,14 @@
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                 </div>
                 <hr />
+                @*
+
                 <div class="d-flex flex-column">
                     <span class="text-secondary mx-auto mt-2">OR</span>
                     <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
                 </div>
+
+                *@
                 <hr />
                 <div>
                     <p>
@@ -55,13 +59,17 @@
                     <p>
                         <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
                     </p>
+                    @*
                     <p>
                         <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
                     </p>
+                    *@
                 </div>
             </EditForm>
         </section>
     </div>
+    @* 
+    
     <div class="col-lg-4 col-lg-offset-2">
         <section>
             <h3>Use another service to log in.</h3>
@@ -69,6 +77,8 @@
             <ExternalLoginPicker />
         </section>
     </div>
+
+    *@
 </div>
 
 @code {
