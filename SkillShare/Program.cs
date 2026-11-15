@@ -1,8 +1,14 @@
 using SkillShare.Components;
+using Microsoft.EntityFrameworkCore;
+using SkillShare.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Supabase")));
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
