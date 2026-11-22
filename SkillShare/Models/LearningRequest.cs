@@ -9,4 +9,6 @@ public class LearningRequest
     public string Status { get; set; } = "Pending";
     public DateTime CreatedAt { get; set; }
     public DateTime? RespondedAt { get; set; }
+
+    public Skill? Skill { get; set; }
 }

@@ -1,0 +1,58 @@
+@page "/skills"
+@using Microsoft.EntityFrameworkCore
+@using SkillShare.Data
+@using SkillShare.Models
+@inject ApplicationDbContext Db
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Skills</PageTitle>
+
+<h1>Available Skills</h1>
+
+@if (skills is null)
+{
+    <p>Loading skills...</p>
+}
+else if (skills.Count == 0)
+{
+    <p>No skills are currently available.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var skill in skills)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5">@skill.Title</h2>
+                        <p>@skill.Description</p>
+                        <button class="btn btn-primary"
+                                type="button"
+                                @onclick="() => ViewSkill(skill.Id)">
+                            View and Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Skill>? skills;
+
+    protected override async Task OnInitializedAsync()
+    {
+        skills = await Db.Skills
+            .AsNoTracking()
+            .OrderBy(skill => skill.Title)
+            .ToListAsync();
+    }
+
+    private void ViewSkill(Guid skillId)
+    {
+        Navigation.NavigateTo($"/skills/{skillId}");
+    }
+}

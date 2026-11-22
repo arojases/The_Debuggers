@@ -1,0 +1,129 @@
+@page "/skills/{SkillId:guid}"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using SkillShare.Data
+@using SkillShare.Models
+@using System.Security.Claims
+@inject ApplicationDbContext Db
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Request to Learn</PageTitle>
+
+@if (skill is null)
+{
+    <p>@(skillNotFound ? "Skill not found." : "Loading skill...")</p>
+}
+else
+{
+    <h1>@skill.Title</h1>
+    <p>@skill.Description</p>
+
+    <EditForm Model="request" OnValidSubmit="SubmitRequest">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <InputTextArea id="message"
+                           class="form-control"
+                           @bind-Value="request.Message" />
+        </div>
+
+        <button class="btn btn-primary" type="submit">
+            Send Learning Request
+        </button>
+    </EditForm>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert @(requestSucceeded ? "alert-success" : "alert-warning") mt-3"
+             role="alert">
+            @statusMessage
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid SkillId { get; set; }
+
+    private Skill? skill;
+    private LearningRequest request = new();
+    private string? statusMessage;
+    private bool requestSucceeded;
+    private bool skillNotFound;
+
+    protected override async Task OnInitializedAsync()
+    {
+        skill = await Db.Skills
+            .AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Id == SkillId);
+
+        if (skill is null)
+        {
+            skillNotFound = true;
+            return;
+        }
+
+        request.SkillId = skill.Id;
+    }
+
+    private async Task SubmitRequest()
+    {
+        requestSucceeded = false;
+        statusMessage = null;
+
+        if (skill is null)
+        {
+            statusMessage = "Skill not found.";
+            return;
+        }
+
+        var authenticationState =
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            statusMessage = "Please log in before sending a learning request.";
+            return;
+        }
+
+        var learnerId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrWhiteSpace(learnerId))
+        {
+            statusMessage = "Your user ID could not be found. Please log out and log in again.";
+            return;
+        }
+
+        if (skill.OwnerId == learnerId)
+        {
+            statusMessage = "You cannot request to learn your own skill.";
+            return;
+        }
+
+        var duplicateExists = await Db.LearningRequests.AnyAsync(item =>
+            item.SkillId == skill.Id &&
+            item.LearnerId == learnerId &&
+            item.Status == "Pending");
+
+        if (duplicateExists)
+        {
+            statusMessage = "You already have a pending request for this skill.";
+            return;
+        }
+
+        request.Id = Guid.NewGuid();
+        request.LearnerId = learnerId;
+        request.Status = "Pending";
+        request.CreatedAt = DateTime.UtcNow;
+
+        Db.LearningRequests.Add(request);
+        await Db.SaveChangesAsync();
+
+        requestSucceeded = true;
+        statusMessage = "Learning request sent.";
+    }
+}
