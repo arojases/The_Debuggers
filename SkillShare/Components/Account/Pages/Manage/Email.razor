@@ -1,0 +1,188 @@
+
+@page "/Account/Manage/Email"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using SkillShare.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Manage Email</PageTitle>
+
+<h3>Manage Email</h3>
+
+<StatusMessage Message="@message" />
+
+<div class="row">
+    <div class="col-xl-6">
+
+        <EditForm Model="Input"
+                  FormName="change-email"
+                  OnValidSubmit="OnValidSubmitAsync"
+                  method="post">
+
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger"
+                               role="alert" />
+
+            <div class="form-floating mb-3">
+                <input type="email"
+                       value="@email"
+                       id="currentEmail"
+                       class="form-control"
+                       placeholder="Current Email"
+                       disabled />
+                <label for="currentEmail">
+                    Current Email
+                </label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.NewEmail"
+                           id="newEmail"
+                           class="form-control"
+                           autocomplete="email"
+                           placeholder="New Email" />
+                <label for="newEmail">New Email</label>
+                <ValidationMessage For="() => Input.NewEmail"
+                                   class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText type="password"
+                           @bind-Value="Input.CurrentPassword"
+                           id="currentPassword"
+                           class="form-control"
+                           autocomplete="current-password"
+                           placeholder="Current Password" />
+                <label for="currentPassword">
+                    Current Password
+                </label>
+                <ValidationMessage For="() => Input.CurrentPassword"
+                                   class="text-danger" />
+            </div>
+
+            <button type="submit"
+                    class="w-100 btn btn-lg btn-primary">
+                Change Email
+            </button>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? message;
+    private ApplicationUser? user;
+    private string? email;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(FormName = "change-email")]
+    private InputModel Input { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(
+                UserManager, HttpContext);
+            return;
+        }
+
+        email = await UserManager.GetEmailAsync(user);
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(
+                UserManager, HttpContext);
+            return;
+        }
+
+        var newEmail = Input.NewEmail.Trim();
+
+        if (string.Equals(
+                newEmail, email,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            message = "Your email is unchanged.";
+            return;
+        }
+
+        // Verify the user's current password.
+        var validPassword = await UserManager.CheckPasswordAsync(
+            user, Input.CurrentPassword);
+
+        if (!validPassword)
+        {
+            message = "Error: Incorrect current password.";
+            return;
+        }
+
+        // Check if the new email is already registered.
+        var existingUser = await UserManager.FindByEmailAsync(newEmail);
+
+        if (existingUser is not null &&
+            existingUser.Id != user.Id)
+        {
+            message = "Error: This email is already registered.";
+            return;
+        }
+
+        // Update email and username together.
+        user.Email = newEmail;
+        user.UserName = newEmail;
+        user.EmailConfirmed = false;
+
+        var result = await UserManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            message = "Error: " + string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+            return;
+        }
+
+        // Invalidate previously issued security stamps.
+        var stampResult =
+            await UserManager.UpdateSecurityStampAsync(user);
+
+        if (!stampResult.Succeeded)
+        {
+            message = "Email updated, but session security " +
+                      "could not be refreshed. Please log in again.";
+            return;
+        }
+
+        // Refresh the current login session.
+        await SignInManager.RefreshSignInAsync(user);
+
+        RedirectManager.RedirectToCurrentPageWithStatus(
+            "Your email has been updated successfully.",
+            HttpContext);
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "New email is required.")]
+        [EmailAddress]
+        [Display(Name = "New Email")]
+        public string NewEmail { get; set; } = "";
+
+        [Required(ErrorMessage = "Current password is required.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Current Password")]
+        public string CurrentPassword { get; set; } = "";
+    }
+}

@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.DependencyInjection
+@using SkillShare.Data
+
+@inject IServiceScopeFactory ScopeFactory
+
+<span>@displayName</span>
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+
+    private string displayName = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        displayName = "";
+
+        if (string.IsNullOrWhiteSpace(UserId))
+        {
+            return;
+        }
+
+        // Create an independent scope for this operation.
+        await using var scope = ScopeFactory.CreateAsyncScope();
+
+        var userManager =
+            scope.ServiceProvider
+                 .GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user = await userManager.FindByIdAsync(UserId);
+
+        if (user is not null)
+        {
+            displayName = string.IsNullOrWhiteSpace(user.FullName)
+                ? user.UserName ?? ""
+                : user.FullName;
+        }
+    }
+}

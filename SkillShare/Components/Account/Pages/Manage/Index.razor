@@ -1,0 +1,149 @@
+
+@page "/Account/Manage"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using SkillShare.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>My Profile</PageTitle>
+
+<h3>My Profile</h3>
+<StatusMessage />
+
+<div class="row">
+    <div class="col-xl-6">
+        <EditForm Model="Input"
+                  FormName="profile"
+                  OnValidSubmit="OnValidSubmitAsync"
+                  method="post">
+
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="form-floating mb-3">
+                <input type="text"
+                       value="@username"
+                       id="username"
+                       class="form-control"
+                       disabled />
+                <label for="username">Email</label>
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FullName"
+                           id="fullName"
+                           class="form-control"
+                           autocomplete="name"
+                           placeholder="Full Name" />
+                <label for="fullName">Full Name</label>
+                <ValidationMessage For="() => Input.FullName"
+                                   class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label for="biography" class="form-label">
+                    Biography
+                </label>
+
+                <InputTextArea @bind-Value="Input.Biography"
+                               id="biography"
+                               class="form-control"
+                               rows="4"
+                               placeholder="Tell us about yourself..." />
+
+                <ValidationMessage For="() => Input.Biography"
+                                   class="text-danger" />
+            </div>
+
+            <button type="submit"
+                    class="w-100 btn btn-lg btn-primary">
+                Save Changes
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ApplicationUser? user;
+    private string? username;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(
+                UserManager, HttpContext);
+            return;
+        }
+
+        username = await UserManager.GetUserNameAsync(user);
+
+        // Load existing profile information on GET only.
+        // On POST, preserve the submitted form values.
+        if (HttpContext.Request.Method == "GET")
+        {
+            Input.FullName = user.FullName;
+            Input.Biography = user.Biography;
+        }
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(
+                UserManager, HttpContext);
+            return;
+        }
+
+        user.FullName = Input.FullName.Trim();
+        user.Biography = Input.Biography?.Trim();
+
+        var result = await UserManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+
+            RedirectManager.RedirectToCurrentPageWithStatus(
+                $"Error: {errors}",
+                HttpContext);
+            return;
+        }
+
+        await SignInManager.RefreshSignInAsync(user);
+
+        RedirectManager.RedirectToCurrentPageWithStatus(
+            "Your profile has been updated successfully.",
+            HttpContext);
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Full name is required.")]
+        [StringLength(100, MinimumLength = 2)]
+        [Display(Name = "Full Name")]
+        public string FullName { get; set; } = "";
+
+        [StringLength(500)]
+        [Display(Name = "Biography")]
+        public string? Biography { get; set; }
+    }
+}
+

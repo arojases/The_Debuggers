@@ -1,0 +1,51 @@
+
+@page "/profile/{UserId}"
+
+@using Microsoft.AspNetCore.Identity
+@using SkillShare.Data
+
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Public Profile</PageTitle>
+
+<h3>Member Profile</h3>
+
+@if (isLoading)
+{
+    <p>Loading profile...</p>
+}
+else if (profile is null)
+{
+    <p>User profile not found.</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h4>@profile.FullName</h4>
+
+            <h5>About Me</h5>
+
+            <p>
+                @(string.IsNullOrWhiteSpace(profile.Biography)
+                    ? "This user has not added a biography yet."
+                    : profile.Biography)
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+
+    private ApplicationUser? profile;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        profile = await UserManager.FindByIdAsync(UserId);
+        isLoading = false;
+    }
+}
